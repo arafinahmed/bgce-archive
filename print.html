@@ -3342,6 +3342,127 @@ yarn format
 </ol>
 <h2 id="contributing"><a class="header" href="#contributing">Contributing</a></h2>
 <p>Contributions are welcome! Please feel free to submit a Pull Request.</p>
+<div style="break-before: page; page-break-before: always;"></div><p>[<strong>Author:</strong> @arafinahmed
+<strong>Date:</strong> 2025-04-25
+<strong>Category:</strong> e.g., mini-projects/rate-limiter
+<strong>Tags:</strong> [go, rate-limiter, mini-projects]
+]</p>
+<h1 id="go-rate-limiter-demo"><a class="header" href="#go-rate-limiter-demo">Go Rate Limiter Demo</a></h1>
+<p>This project demonstrates various rate limiting algorithms implemented in Go for an HTTP server.</p>
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>The application runs a simple HTTP server with two endpoints:</p>
+<ul>
+<li><code>/unlimited</code>: An endpoint with no rate limiting applied.</li>
+<li><code>/limited</code>: An endpoint protected by a configurable rate limiter.</li>
+</ul>
+<p>It showcases different rate limiting strategies that can be easily swapped.</p>
+<h2 id="implemented-rate-limiters"><a class="header" href="#implemented-rate-limiters">Implemented Rate Limiters</a></h2>
+<p>The following rate limiting algorithms are implemented in the <code>internal/ratelimiter</code> package:</p>
+<ol>
+<li><strong>Token Bucket:</strong> (<code>TokenBucketRateLimiter</code>) Allows requests based on available tokens, which refill at a constant rate.</li>
+<li><strong>Fixed Window Counter:</strong> (<code>FixedWindowRateLimiter</code>) Limits requests to a fixed number within discrete time windows.</li>
+<li><strong>Sliding Window Log:</strong> (<code>SlidingWindowLogRateLimiter</code>) Limits requests based on the count of timestamps within a rolling time window. More accurate but potentially memory-intensive.</li>
+<li><strong>Sliding Window Counter:</strong> (<code>SlidingWindowCounterRateLimiter</code>) Approximates the count within a rolling window using counters for the current and previous windows. A balance between accuracy and performance/memory.</li>
+</ol>
+<h2 id="project-structure-1"><a class="header" href="#project-structure-1">Project Structure</a></h2>
+<pre><code>rate-limiter/
+├── cmd/
+│   └── app/
+│       └── main.go        # Application entry point
+├── internal/
+│   ├── ratelimiter/
+│   │   └── ratelimiter.go # Rate limiter interface and implementations
+│   └── server/
+│       └── server.go      # HTTP server setup and handlers
+├── docker-compose.yml     # Docker Compose configuration
+├── Dockerfile             # Dockerfile for building the application
+├── go.mod                 # Go module configuration
+└── README.md              # This file
+</code></pre>
+<h2 id="getting-started"><a class="header" href="#getting-started">Getting Started</a></h2>
+<h3 id="prerequisites-1"><a class="header" href="#prerequisites-1">Prerequisites</a></h3>
+<ul>
+<li>Go (version 1.18 or later recommended)</li>
+</ul>
+<h3 id="running-the-application"><a class="header" href="#running-the-application">Running the Application</a></h3>
+<ol>
+<li>Clone the repository (if applicable).</li>
+<li>Navigate to the project root directory (<code>rate-limiter</code>).</li>
+<li>Run the application:
+<pre><code class="language-bash">go run ./cmd/app/main.go
+</code></pre>
+</li>
+<li>The server will start, typically on <code>127.0.0.1:8080</code>.</li>
+<li>You can access the endpoints using a web browser or <code>curl</code>:
+<ul>
+<li><code>curl http://127.0.0.1:8080/unlimited</code></li>
+<li><code>curl http://127.0.0.1:8080/limited</code></li>
+</ul>
+</li>
+</ol>
+<h3 id="configuring-the-rate-limiter"><a class="header" href="#configuring-the-rate-limiter">Configuring the Rate Limiter</a></h3>
+<p>To change the rate limiting algorithm or its parameters:</p>
+<ol>
+<li>Open <code>cmd/app/main.go</code>.</li>
+<li>Locate the section where the <code>rl</code> variable is initialized.</li>
+<li>Comment out the current limiter and uncomment/modify the desired one.</li>
+</ol>
+<pre><code class="language-go">func main() {
+    // Choose and initialize the desired rate limiter
+    // Example: Token Bucket (10 tokens capacity, 1 token per second)
+    // rl := ratelimiter.NewTokenBucketRateLimiter(10, time.Second)
+
+    // Example: Fixed Window (10 requests per minute)
+    // rl := ratelimiter.NewFixedWindowRateLimiter(1*time.Minute, 10)
+
+    // Example: Sliding Window Log (15 requests per minute)
+    // rl := ratelimiter.NewSlidingWindowLogRateLimiter(1*time.Minute, 15)
+
+    // Example: Sliding Window Counter (6 requests per 60 seconds)
+    rl := ratelimiter.NewSlidingWindowCounterRateLimiter(60*time.Second, 6)
+
+    addr := "127.0.0.1:8080"
+    log.Println("Initializing server...")
+    server.StartServer(addr, rl)
+}
+</code></pre>
+<ol start="4">
+<li>Save the file and restart the application (<code>go run ./cmd/app/main.go</code>).</li>
+</ol>
+<h2 id="running-with-docker"><a class="header" href="#running-with-docker">Running with Docker</a></h2>
+<p>You can also run this application using Docker and Docker Compose.</p>
+<p><strong>Prerequisites:</strong></p>
+<ul>
+<li><a href="https://docs.docker.com/get-docker/">Docker</a></li>
+<li><a href="https://docs.docker.com/compose/install/">Docker Compose</a></li>
+</ul>
+<p><strong>Steps:</strong></p>
+<ol>
+<li>
+<p><strong>Build the Docker image:</strong></p>
+<pre><code class="language-bash">docker build -t rate-limiter-app .
+</code></pre>
+</li>
+<li>
+<p><strong>Run using Docker Compose:</strong></p>
+<p>This command will start the rate limiter service in the background.</p>
+<pre><code class="language-bash">docker-compose up -d
+</code></pre>
+</li>
+<li>
+<p><strong>Access the service:</strong></p>
+<p>The service will be available on your host machine at port 8088.</p>
+<ul>
+<li>Limited endpoint: <a href="http://localhost:8088/limited">http://localhost:8088/limited</a></li>
+<li>Unlimited endpoint: <a href="http://localhost:8088/unlimited">http://localhost:8088/unlimited</a></li>
+</ul>
+</li>
+<li>
+<p><strong>Stop the service:</strong></p>
+<pre><code class="language-bash">docker-compose down
+</code></pre>
+</li>
+</ol>
 <div style="break-before: page; page-break-before: always;"></div><p><strong>comprehensive and detailed RBAC permission list</strong> Golang Community Vault platform. This will allow <strong>fine-grained control</strong> for various roles across all the directories and content types outlined in README.</p>
 <hr />
 <h2 id="-universal-permission-categories-applicable-to-all-modules"><a class="header" href="#-universal-permission-categories-applicable-to-all-modules">🔒 Universal Permission Categories (Applicable to all modules)</a></h2>
